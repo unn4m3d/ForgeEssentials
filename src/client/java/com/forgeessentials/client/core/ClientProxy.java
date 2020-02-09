@@ -2,20 +2,17 @@ package com.forgeessentials.client.core;
 
 import static com.forgeessentials.client.ForgeEssentialsClient.feclientlog;
 
-import net.minecraftforge.client.ClientCommandHandler;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.function.Supplier;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig.Type;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.network.NetworkEvent.Context;
 
 import com.forgeessentials.client.ForgeEssentialsClient;
 import com.forgeessentials.client.auth.ClientAuthNetHandler;
@@ -25,6 +22,8 @@ import com.forgeessentials.client.handler.QRRenderer;
 import com.forgeessentials.client.handler.QuestionerKeyHandler;
 import com.forgeessentials.client.handler.ReachDistanceHandler;
 import com.forgeessentials.commons.BuildInfo;
+import com.forgeessentials.commons.network.DefaultNetHandler;
+import com.forgeessentials.commons.network.IMessage;
 import com.forgeessentials.commons.network.NetworkUtils;
 import com.forgeessentials.commons.network.NetworkUtils.NullMessageHandler;
 import com.forgeessentials.commons.network.Packet0Handshake;
@@ -38,11 +37,9 @@ import com.forgeessentials.commons.network.Packet7Remote;
 public class ClientProxy extends CommonProxy
 {
 
-    public static final String CONFIG_CAT = Configuration.CATEGORY_GENERAL;
+    public static final String CONFIG_CAT = "general";
 
     /* ------------------------------------------------------------ */
-
-    private static Configuration config;
 
     private static int clientTimeTicked;
 
@@ -72,44 +69,47 @@ public class ClientProxy extends CommonProxy
     }
 
     @Override
-    public void doPreInit(FMLPreInitializationEvent event)
+    public void doPreInit(FMLCommonSetupEvent event)
     {
-        BuildInfo.getBuildInfo(event.getSourceFile());
-        feclientlog.info(String.format("Running ForgeEssentials client %s (%s)", BuildInfo.getFullVersion(), BuildInfo.getBuildHash()));
+        try
+        {
+            BuildInfo.getBuildInfo(new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()));
+            feclientlog.info(String.format("Running ForgeEssentials client %s (%s)", BuildInfo.getFullVersion(), BuildInfo.getBuildHash()));
 
-        // Initialize configuration
-        config = new Configuration(event.getSuggestedConfigurationFile());
-        loadConfig();
+            // Initialize configuration
+            ModLoadingContext.get().registerConfig(Type.COMMON, ClientConfig.SPEC);
+            loadConfig();
 
-        registerNetworkMessages();
-    }
+            registerNetworkMessages();
 
-    @Override
-    public void load(FMLInitializationEvent event)
-    {
-        super.load(event);
-        ClientCommandHandler.instance.registerCommand(new FEClientCommand());
+            ClientCommandHandler.instance.registerCommand(new FEClientCommand());
+        } catch (URISyntaxException e) {}
     }
 
     private void registerNetworkMessages()
     {
         // Register network messages
-        NetworkUtils.registerMessageProxy(Packet0Handshake.class, 0, Side.SERVER, new NullMessageHandler<Packet0Handshake>() {
+        NetworkUtils.registerMessageProxy(Packet0Handshake.class, 0, new NullMessageHandler<Packet0Handshake>() {
             /* dummy */
         });
-        NetworkUtils.registerMessage(cuiRenderer, Packet1SelectionUpdate.class, 1, Side.CLIENT);
-        NetworkUtils.registerMessage(reachDistanceHandler, Packet2Reach.class, 2, Side.CLIENT);
-        NetworkUtils.registerMessage(permissionOverlay, Packet3PlayerPermissions.class, 3, Side.CLIENT);
-        NetworkUtils.registerMessage(new IMessageHandler<Packet5Noclip, IMessage>() {
+        NetworkUtils.registerMessage(cuiRenderer, Packet1SelectionUpdate.class, 1);
+        NetworkUtils.registerMessage(reachDistanceHandler, Packet2Reach.class, 2);
+        NetworkUtils.registerMessage(permissionOverlay, Packet3PlayerPermissions.class, 3);
+        NetworkUtils.registerMessage(new DefaultNetHandler<Packet5Noclip>() {
             @Override
-            public IMessage onMessage(Packet5Noclip message, MessageContext ctx)
+            public IMessage onMessage(Packet5Noclip message, Supplier<Context> ctx)
             {
-                FMLClientHandler.instance().getClientPlayerEntity().noClip = message.getNoclip();
+                PlayerEntity player = Minecraft.getInstance().player;
+                if (player != null)
+                {
+                    player.noClip = message.getNoclip();
+                }
+
                 return null;
             }
-        }, Packet5Noclip.class, 5, Side.CLIENT);
-        NetworkUtils.registerMessage(new ClientAuthNetHandler(), Packet6AuthLogin.class, 6, Side.CLIENT);
-        NetworkUtils.registerMessage(qrCodeRenderer, Packet7Remote.class, 7, Side.CLIENT);
+        }, Packet5Noclip.class, 5);
+        NetworkUtils.registerMessage(new ClientAuthNetHandler(), Packet6AuthLogin.class, 6);
+        NetworkUtils.registerMessage(qrCodeRenderer, Packet7Remote.class, 7);
     }
 
     /* ------------------------------------------------------------ */

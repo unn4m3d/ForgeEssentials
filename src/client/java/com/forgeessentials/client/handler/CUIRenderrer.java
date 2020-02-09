@@ -1,29 +1,30 @@
 package com.forgeessentials.client.handler;
 
-import net.minecraft.client.renderer.Tessellator;
+import java.util.function.Supplier;
+
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.network.NetworkEvent.Context;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.forgeessentials.commons.network.DefaultNetHandler;
+import com.forgeessentials.commons.network.IMessage;
 import com.forgeessentials.commons.network.Packet1SelectionUpdate;
 import com.forgeessentials.commons.selections.Point;
 import com.forgeessentials.commons.selections.Selection;
 
-@SideOnly(value = Side.CLIENT)
-public class CUIRenderrer implements IMessageHandler<Packet1SelectionUpdate, IMessage>
+@OnlyIn(Dist.CLIENT)
+public class CUIRenderrer extends DefaultNetHandler<Packet1SelectionUpdate>
 {
 
     private static final float ALPHA = .25f;
@@ -173,7 +174,7 @@ public class CUIRenderrer implements IMessageHandler<Packet1SelectionUpdate, IMe
     }
 
     @Override
-    public IMessage onMessage(Packet1SelectionUpdate message, MessageContext ctx)
+    public IMessage onMessage(Packet1SelectionUpdate message, Supplier<Context> ctx)
     {
         selection = message.getSelection();
         return null;

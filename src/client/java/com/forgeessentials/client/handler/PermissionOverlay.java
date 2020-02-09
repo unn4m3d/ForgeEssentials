@@ -1,32 +1,34 @@
 package com.forgeessentials.client.handler;
 
+import java.util.function.Supplier;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.network.NetworkEvent.Context;
 
 import org.lwjgl.opengl.GL11;
 
 import com.forgeessentials.client.ForgeEssentialsClient;
+import com.forgeessentials.commons.network.DefaultNetHandler;
+import com.forgeessentials.commons.network.IMessage;
 import com.forgeessentials.commons.network.Packet3PlayerPermissions;
 
-public class PermissionOverlay extends Gui implements IMessageHandler<Packet3PlayerPermissions, IMessage>
+public class PermissionOverlay extends Gui implements DefaultNetHandler<Packet3PlayerPermissions>
 {
 
     protected ResourceLocation deniedPlaceTexture;
@@ -43,7 +45,7 @@ public class PermissionOverlay extends Gui implements IMessageHandler<Packet3Pla
     }
 
     @Override
-    public IMessage onMessage(Packet3PlayerPermissions message, MessageContext ctx)
+    public IMessage onMessage(Packet3PlayerPermissions message, Supplier<Context> ctx)
     {
         if (message.reset)
         {

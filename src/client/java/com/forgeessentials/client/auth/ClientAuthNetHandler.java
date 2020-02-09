@@ -7,11 +7,11 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraftforge.fml.network.NetworkEvent.Context;
 
 import com.forgeessentials.client.core.ClientProxy;
-import com.forgeessentials.commons.network.AbstractNetHandler;
+import com.forgeessentials.commons.network.DefaultNetHandler;
 import com.forgeessentials.commons.network.IMessage;
 import com.forgeessentials.commons.network.Packet6AuthLogin;
 
-public class ClientAuthNetHandler extends AbstractNetHandler<Packet6AuthLogin>
+public class ClientAuthNetHandler extends DefaultNetHandler<Packet6AuthLogin>
 {
     public IMessage onMessage(Packet6AuthLogin message, Supplier<Context> ctx)
     {

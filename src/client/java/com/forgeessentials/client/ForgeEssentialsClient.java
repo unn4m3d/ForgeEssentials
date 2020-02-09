@@ -2,22 +2,20 @@ package com.forgeessentials.client;
 
 import java.util.Map;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.network.NetworkCheckHandler;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.forgeessentials.client.core.ClientProxy;
 import com.forgeessentials.client.core.CommonProxy;
-import com.forgeessentials.commons.BuildInfo;
 
-@Mod(modid = ForgeEssentialsClient.MODID, name = "ForgeEssentials Client Addon", version = BuildInfo.BASE_VERSION, guiFactory = "com.forgeessentials.client.gui.forge.FEGUIFactory", useMetadata = true, dependencies = BuildInfo.DEPENDENCIES)
+//@Mod(modid = ForgeEssentialsClient.MODID, name = "ForgeEssentials Client Addon", version = BuildInfo.BASE_VERSION, guiFactory = "com.forgeessentials.client.gui.forge.FEGUIFactory", useMetadata = true, dependencies = BuildInfo.DEPENDENCIES)
+@Mod(ForgeEssentialsClient.MODID)
 public class ForgeEssentialsClient
 {
     
@@ -25,20 +23,27 @@ public class ForgeEssentialsClient
 
     public static final Logger feclientlog = LogManager.getLogger("forgeessentials");
 
-    @SidedProxy(clientSide = "com.forgeessentials.client.core.ClientProxy", serverSide = "com.forgeessentials.client.core.CommonProxy")
-    protected static CommonProxy proxy;
+    protected static CommonProxy proxy = FMLEnvironment.dist.isClient() ? new ClientProxy() : new CommonProxy();
 
-    @Instance("ForgeEssentialsClient")
     protected static ForgeEssentialsClient instance;
 
     protected static boolean serverHasFE;
 
     /* ------------------------------------------------------------ */
 
-    @NetworkCheckHandler
-    public boolean getServerMods(Map<String, String> map, Side side)
+    public ForgeEssentialsClient() {
+        if (instance == null)
+        {
+            instance = this;
+        }
+
+        FMLJavaModLoadingContext.get().getModEventBus().addListener();
+    }
+
+
+    public boolean getServerMods(Map<String, String> map, Dist side)
     {
-        if (side.equals(Side.SERVER))
+        if (side.isDedicatedServer())
         {
             if (map.containsKey("forgeessentials"))
             {
@@ -49,18 +54,11 @@ public class ForgeEssentialsClient
         return true;
     }
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent e)
+    public void preInit(FMLCommonSetupEvent e)
     {
-        if (e.getSide() == Side.SERVER)
+        if (FMLEnvironment.dist.isDedicatedServer())
             feclientlog.error("ForgeEssentials client does nothing on servers. You should remove it!");
         proxy.doPreInit(e);
-    }
-
-    @EventHandler
-    public void load(FMLInitializationEvent e)
-    {
-        proxy.load(e);
     }
 
     /* ------------------------------------------------------------ */

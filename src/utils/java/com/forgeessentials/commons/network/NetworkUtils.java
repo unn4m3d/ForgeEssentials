@@ -2,11 +2,9 @@ package com.forgeessentials.commons.network;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -21,7 +19,7 @@ public class NetworkUtils
 
     private static Set<Integer> registeredMessages = new HashSet<>();
 
-    public static class NullMessageHandler<REQ extends IMessage> extends AbstractNetHandler
+    public static class NullMessageHandler<REQ extends IMessage> extends DefaultNetHandler
     {
         @Override public IMessage onMessage(IMessage message, Supplier ctx)
         {
@@ -51,7 +49,7 @@ public class NetworkUtils
             }, nmh);
     }
 
-    public static <REQ extends IMessage> void registerMessage(BiConsumer<REQ, Supplier<NetworkEvent.Context>> messageHandler, Class<REQ> requestMessageType, int discriminator)
+    public static <REQ extends IMessage> void registerMessage(DefaultNetHandler<REQ> messageHandler, Class<REQ> requestMessageType, int discriminator)
     {
         netHandler.registerMessage(discriminator, requestMessageType, IMessage::toBytes, packetBuffer -> {
             try

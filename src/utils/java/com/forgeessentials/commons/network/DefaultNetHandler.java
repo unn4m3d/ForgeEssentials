@@ -5,10 +5,10 @@ import java.util.function.Supplier;
 
 import net.minecraftforge.fml.network.NetworkEvent.Context;
 
-public abstract class AbstractNetHandler<REQ extends IMessage>  implements BiConsumer<REQ, Supplier<Context>>
+public interface DefaultNetHandler<REQ extends IMessage>  extends BiConsumer<REQ, Supplier<Context>>
 {
     @Override
-    public void accept(REQ message, Supplier<Context> ctx) {
+    default void accept(REQ message, Supplier<Context> ctx) {
         IMessage response = onMessage(message, ctx);
         if (response != null)
         {
@@ -17,5 +17,5 @@ public abstract class AbstractNetHandler<REQ extends IMessage>  implements BiCon
         ctx.get().setPacketHandled(true);
     }
 
-    public abstract IMessage onMessage(REQ message, Supplier<Context> ctx);
+    IMessage onMessage(REQ message, Supplier<Context> ctx);
 }
