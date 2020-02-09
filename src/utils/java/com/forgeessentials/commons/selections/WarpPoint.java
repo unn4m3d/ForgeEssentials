@@ -6,9 +6,9 @@ import java.util.regex.Pattern;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import com.google.gson.annotations.Expose;
 
@@ -28,7 +28,7 @@ public class WarpPoint
     protected double zd;
 
     @Expose(serialize = false)
-    protected WorldServer world;
+    protected ServerWorld world;
 
     // ------------------------------------------------------------
 
@@ -42,10 +42,10 @@ public class WarpPoint
         this.yaw = playerYaw;
     }
 
-    public WarpPoint(WorldServer world, double x, double y, double z, float playerPitch, float playerYaw)
+    public WarpPoint(ServerWorld world, double x, double y, double z, float playerPitch, float playerYaw)
     {
         this.world = world;
-        this.dim = world.provider.getDimension();
+        this.dim = world.getDimension().getType().getId();
         this.xd = x;
         this.yd = y;
         this.zd = z;
@@ -75,7 +75,7 @@ public class WarpPoint
 
     public WarpPoint(Entity entity)
     {
-        this(entity.world instanceof WorldServer ? (WorldServer) entity.world : null, entity.posX, entity.posY, entity.posZ, entity.rotationPitch,
+        this(entity.world instanceof ServerWorld ? (ServerWorld) entity.world : null, entity.serverPosX, entity.serverPosY, entity.serverPosZ, entity.rotationPitch,
                 entity.rotationYaw);
     }
 
@@ -151,10 +151,10 @@ public class WarpPoint
         this.dim = dim;
     }
 
-    public WorldServer getWorld()
+    public ServerWorld getWorld()
     {
-        if (world == null || world.provider.getDimension() != dim)
-            world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dim);
+        if (world == null || world.getDimension().getType().getId() != dim)
+            world = ServerLifecycleHooks.getCurrentServer().getWorld(DimensionType.getById(dim));
         return world;
     }
 
@@ -206,7 +206,7 @@ public class WarpPoint
      */
     public double distance(Entity e)
     {
-        return Math.sqrt((xd - e.posX) * (xd - e.posX) + (yd - e.posY) * (yd - e.posY) + (zd - e.posZ) * (zd - e.posZ));
+        return Math.sqrt((xd - e.serverPosX) * (xd - e.serverPosX) + (yd - e.serverPosY) * (yd - e.serverPosY) + (zd - e.serverPosZ) * (zd - e.serverPosZ));
     }
 
     public void validatePositiveY()

@@ -4,14 +4,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
+import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.CommandBlockLogic;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import com.google.gson.annotations.Expose;
 
@@ -24,8 +28,9 @@ public class WorldPoint extends Point
     protected int dim;
 
     @Expose(serialize = false)
-    protected World world;
+    protected IWorld world;
 
+    private static MinecraftServer server;
     // ------------------------------------------------------------
 
     public WorldPoint(int dimension, int x, int y, int z)
@@ -39,14 +44,14 @@ public class WorldPoint extends Point
         this(dimension, location.getX(), location.getY(), location.getZ());
     }
 
-    public WorldPoint(World world, int x, int y, int z)
+    public WorldPoint(IWorld world, int x, int y, int z)
     {
         super(x, y, z);
-        this.dim = world.provider.getDimension();
+        this.dim = world.getDimension().getType().getId();
         this.world = world;
     }
 
-    public WorldPoint(World world, BlockPos location)
+    public WorldPoint(IWorld world, BlockPos location)
     {
         this(world, location.getX(), location.getY(), location.getZ());
     }
@@ -54,7 +59,7 @@ public class WorldPoint extends Point
     public WorldPoint(Entity entity)
     {
         super(entity);
-        this.dim = entity.dimension;
+        this.dim = entity.dimension.getId();
         this.world = entity.world;
     }
 
@@ -84,9 +89,21 @@ public class WorldPoint extends Point
         this(event.getWorld(), event.getPos());
     }
 
-    public static WorldPoint create(ICommandSender sender)
+    public static WorldPoint create(ICommandSource sender)
     {
-        return new WorldPoint(sender.getEntityWorld(), sender.getPosition());
+        IWorld world;
+        BlockPos pos;
+        if (sender instanceof Entity) {
+            world = ((Entity) sender).world;
+            pos = ((Entity) sender).getPosition();
+        } else if (sender instanceof CommandBlockLogic) {
+            world = ((CommandBlockLogic) sender).getWorld();
+            pos = new BlockPos(((CommandBlockLogic) sender).getPositionVector());
+        } else {
+            world = DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.getById(0), false, false);
+            pos = new BlockPos(0,0,0);
+        }
+        return new WorldPoint(world, pos);
     }
 
     // ------------------------------------------------------------
@@ -119,11 +136,11 @@ public class WorldPoint extends Point
         return (WorldPoint) super.setZ(z);
     }
 
-    public World getWorld()
+    public IWorld getWorld()
     {
-        if (world != null && world.provider.getDimension() != dim)
+        if (world != null && world.getDimension().getType().getId() != dim)
             return world;
-        world = DimensionManager.getWorld(dim);
+        world = DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.getById(dim), false, false);
         return world;
     }
 

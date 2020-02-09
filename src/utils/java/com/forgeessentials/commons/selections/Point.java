@@ -36,9 +36,9 @@ public class Point
 
     public Point(Entity entity)
     {
-        x = (int) Math.floor(entity.posX);
-        y = (int) Math.floor(entity.posY);
-        z = (int) Math.floor(entity.posZ);
+        x = (int) Math.floor(entity.serverPosX);
+        y = (int) Math.floor(entity.serverPosY);
+        z = (int) Math.floor(entity.serverPosZ);
     }
 
     public Point(Vec3d vector)

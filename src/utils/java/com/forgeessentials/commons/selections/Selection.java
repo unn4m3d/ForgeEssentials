@@ -17,7 +17,7 @@ public class Selection extends WorldArea {
 
     public Selection(World world, Point start, Point end)
     {
-        this(world.provider.getDimension(), start, end);
+        this(world.getDimension().getType().getId(), start, end);
     }
 
     public Selection(int dim, AreaBase area)
@@ -27,7 +27,7 @@ public class Selection extends WorldArea {
 
     public Selection(World world, AreaBase area)
     {
-        this(world.provider.getDimension(), area.getLowPoint(), area.getHighPoint());
+        this(world.getDimension().getType().getId(), area.getLowPoint(), area.getHighPoint());
     }
 
     public Point getStart()
