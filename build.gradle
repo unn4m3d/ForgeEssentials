@@ -23,10 +23,10 @@ buildscript {
 
 	}
 	dependencies {
-		classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
+		classpath "net.minecraftforge.gradle:ForgeGradle:3.+"
 		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.0.1"
 		classpath "org.ajoberstar:gradle-git:0.12.0"
-        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
 	}
 
 }
@@ -78,7 +78,7 @@ repositories {
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 
 /************************************************************
@@ -106,13 +106,52 @@ targetCompatibility = 1.8
 
 // Set up forge options
 minecraft {
-	version = "$project.minecraftVersion-$project.forgeVersion"
-	runDir = "rundir"
-	
-	mappings = "snapshot_20180304"
+    mappings channel: 'snapshot', version: '20190719-1.14.3'
 
-	replaceIn "src/utils/java/com/forgeessentials/commons/BuildInfo.java"
-	replace (["_BASEVERSION_":baseVersion,"_MCVERSION_":project.minecraftVersion])
+	//replaceIn "src/uOtils/java/com/forgeessentials/commons/BuildInfo.java"
+	//replace (["_BASEVERSION_":baseVersion,"_MCVERSION_":project.minecraftVersion])
+
+    runs {
+        client {
+            workingDirectory project.file('rundir')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+            }
+        }
+
+        server {
+            workingDirectory project.file('rundir')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+            }
+
+        }
+    }
 }
 
 // Configure shared manifest
@@ -146,7 +185,8 @@ configurations {
 	shade
 	shadeClient
 	serverLib
-	compile.extendsFrom shade, shadeClient, serverLib
+    provided
+	compile.extendsFrom shade, shadeClient, serverLib, provided
     mavenDeps
 }
 
@@ -154,6 +194,9 @@ configurations {
 
 // Configure dependencies (build-only, shaded and packed libraries)
 dependencies {
+
+    minecraft "net.minecraftforge:forge:$project.minecraftVersion-$project.forgeVersion"
+
 	// IRC
 	serverLib("org.pircbotx:pircbotx:2.0.1") {
         // these are all packaged with the minecraft server jar
@@ -163,10 +206,10 @@ dependencies {
     }
 
     // Shade Mixin library
-    shade (group: "org.spongepowered", name: "mixin", version: "0.7.10-SNAPSHOT") {
+    shade (group: "org.spongepowered", name: "mixin", version: "0.8") {
         exclude group: 'org.ow2.asm', module: 'asm-tree'
     }
-    shadeClient (group: "org.spongepowered", name: "mixin", version: "0.7.10-SNAPSHOT") {
+    shadeClient (group: "org.spongepowered", name: "mixin", version: "0.8") {
         exclude group: 'org.ow2.asm', module: 'asm-tree'
     }
 
@@ -178,18 +221,18 @@ dependencies {
 	/* serverLib "org.eclipse.persistence:eclipselink:2.6.0" */
 	
 	// WorldEdit
-    compile "com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT"
-    deobfCompile "com.sk89q.worldedit:worldedit-forge-mc1.10.2:6.1.5"
-    compile "baubles:Baubles:1.12:1.5.2"
+//    compile "com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT"
+//    deobfCompile "com.sk89q.worldedit:worldedit-forge-mc1.10.2:6.1.5"
+//    compile "baubles:Baubles:1.12:1.5.2"
     //deobfProvided files('lib/worldedit-forge-mc1.10.2-6.1.4-dist.jar')
-    mavenDeps "com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT"
+//    mavenDeps "com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT"
 
 	//buildDep "org.spongepowered:spongeforge:3.1.0-BETA-1046:deobf"
 	provided 'org.spongepowered:spongeapi:6.0.0'
-    provided "io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT"
-    provided "io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT"
-    provided "com.feed_the_beast.mods:FTBLib:5.4.4.5"
-    provided "com.feed_the_beast.mods:FTBUtilities:5.4.0.124"
+//    provided "io.github.opencubicchunks:cubicchunks-api:1.12.2-0.0-SNAPSHOT"
+//    provided "io.github.opencubicchunks:cubicchunks:1.12.2-0.0-SNAPSHOT"
+//    provided "com.feed_the_beast.mods:FTBLib:5.4.4.5"
+//    provided "com.feed_the_beast.mods:FTBUtilities:5.4.0.124"
 
 	// TOOLS.jar from jdk for javadoc support
     // compile files("$jdkHome/lib/tools.jar")
@@ -201,22 +244,21 @@ dependencies {
  */
 
 sourceSets {
+    configurations.each {System.out.println(it.getName())}
     def deps = [
-		configurations.forgeGradleMcDeps,
-		configurations.forgeGradleMc,
-		configurations.provided
+		configurations.minecraft
 	]
 	utils {
-		compileClasspath = files(configurations.compile, sourceSets.api.output)
+		compileClasspath = files(configurations.compile)
 		compileClasspath += files deps
 	}
 	main {
-		compileClasspath = files(configurations.compile, sourceSets.api.output, sourceSets.utils.output)
+		compileClasspath = files(configurations.compile, sourceSets.utils.output)
 		compileClasspath += files deps
         refMap = "mixins.forgeessentials.refmap.json"
 	}
 	client {
-		compileClasspath = files(configurations.compile, sourceSets.api.output, sourceSets.utils.output)
+		compileClasspath = files(configurations.compile, sourceSets.utils.output)
 		compileClasspath += files deps
         refMap = "mixins.forgeessentials.client.refmap.json"
 	}
@@ -228,7 +270,7 @@ project.processResources {
 		include "mcmod.info"
 		expand (
 			"version": project.version, 
-			"mcversion": project.minecraft.version,
+			"mcversion": project.minecraftVersion,
 		)
 	}
 }
@@ -239,7 +281,7 @@ project.processClientResources {
 		include "mcmod.info"
 		expand (
 			"version": project.version, 
-			"mcversion": project.minecraft.version,
+			"mcversion": project.minecraftVersion,
 		)
 	}
 }
@@ -281,7 +323,7 @@ jar.doLast {
 jar {
 	dependsOn "serverLibArchive"
 	classifier = "server"
-	appendix = minecraft.version
+	appendix = project.minecraftVersion
 	
 	from sourceSets.main.output
 	from sourceSets.utils.output
@@ -302,7 +344,7 @@ jar {
 
 task clientJar (dependsOn: "clientClasses", type: Jar) {
 	classifier = "client"
-	appendix = minecraft.version
+	appendix = project.minecraftVersion
 	
 	from sourceSets.client.output
 	from sourceSets.utils.output
@@ -326,7 +368,7 @@ task clientJar (dependsOn: "clientClasses", type: Jar) {
 
 task deobfJar(dependsOn: "classes", type: Jar) {
 	classifier = "dev"
-	appendix = minecraft.version
+	appendix = project.minecraftVersion
 	
 	from sourceSets.main.output
 	from sourceSets.utils.output
@@ -364,7 +406,7 @@ javadoc {
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = "javadoc"
-	appendix = project.minecraft.version
+	appendix = project.minecraftVersion
 	
 	from javadoc.destinationDir
 	
@@ -445,5 +487,5 @@ publishing {
 }
 
 task publishAndClean(type: Delete, dependsOn: "publish") {
-    delete javadocJar, sourceJar
+    delete javadocJar
 }

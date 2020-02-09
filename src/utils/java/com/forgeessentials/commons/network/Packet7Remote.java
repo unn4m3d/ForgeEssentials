@@ -1,7 +1,8 @@
 package com.forgeessentials.commons.network;
 
+import java.nio.charset.StandardCharsets;
+
 import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import io.netty.buffer.ByteBuf;
 
 public class Packet7Remote implements IMessage
@@ -18,12 +19,15 @@ public class Packet7Remote implements IMessage
     @Override
     public void fromBytes(ByteBuf buf)
     {
-        link = ByteBufUtils.readUTF8String(buf);
+        link = buf.readCharSequence(buf.readInt(), StandardCharsets.UTF_8).toString();
     }
 
     @Override
     public void toBytes(ByteBuf buf)
     {
-        ByteBufUtils.writeUTF8String(buf, link);
+        int pos = buf.writerIndex();
+        buf.writeInt(0);
+        int written = buf.writeCharSequence(link, StandardCharsets.UTF_8);
+        buf.setInt(pos, written);
     }
 }

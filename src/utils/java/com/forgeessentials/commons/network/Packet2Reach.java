@@ -1,7 +1,6 @@
 package com.forgeessentials.commons.network;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class Packet2Reach implements IMessage
 {
