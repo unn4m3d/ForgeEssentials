@@ -1,32 +1,38 @@
 package com.forgeessentials.client.auth;
 
+import java.util.function.Supplier;
+
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraftforge.fml.network.NetworkEvent.Context;
 
 import com.forgeessentials.client.core.ClientProxy;
+import com.forgeessentials.commons.network.AbstractNetHandler;
+import com.forgeessentials.commons.network.IMessage;
 import com.forgeessentials.commons.network.Packet6AuthLogin;
 
-public class ClientAuthNetHandler implements IMessageHandler<Packet6AuthLogin, IMessage>
+public class ClientAuthNetHandler extends AbstractNetHandler<Packet6AuthLogin>
 {
-    @Override
-    public IMessage onMessage(Packet6AuthLogin message, MessageContext ctx)
+    public IMessage onMessage(Packet6AuthLogin message, Supplier<Context> ctx)
     {
         // send empty response if the client has disabled this
         if (!ClientProxy.allowAuthAutoLogin)
             return new Packet6AuthLogin(1, "");
 
         AuthAutoLogin.KEYSTORE = AuthAutoLogin.load();
-        switch (message.mode)
+        ServerData serverData = Minecraft.getInstance().getCurrentServerData();
+        if (serverData != null)
         {
-        case 0:
-            return new Packet6AuthLogin(1, AuthAutoLogin.getKey(Minecraft.getMinecraft().getCurrentServerData().serverIP));
-        case 2:
-            AuthAutoLogin.setKey(Minecraft.getMinecraft().getCurrentServerData().serverIP, message.hash);
-            break;
-        default:
-            break;
+            switch (message.mode)
+            {
+            case 0:
+                return new Packet6AuthLogin(1, AuthAutoLogin.getKey(serverData.serverIP));
+            case 2:
+                AuthAutoLogin.setKey(serverData.serverIP, message.hash);
+                break;
+            default:
+                break;
+            }
         }
         return null;
     }

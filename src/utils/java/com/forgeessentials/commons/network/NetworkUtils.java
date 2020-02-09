@@ -21,14 +21,12 @@ public class NetworkUtils
 
     private static Set<Integer> registeredMessages = new HashSet<>();
 
-    public static class NullMessageHandler<REQ extends IMessage> implements BiConsumer<REQ, Supplier<NetworkEvent.Context>>
+    public static class NullMessageHandler<REQ extends IMessage> extends AbstractNetHandler
     {
-        @Override
-        public void accept(REQ message, Supplier<NetworkEvent.Context> ctx)
+        @Override public IMessage onMessage(IMessage message, Supplier ctx)
         {
-            ctx.get().setPacketHandled(true);
+            return null;
         }
-
     }
 
     public static <REQ extends IMessage> void registerMessageProxy(Class<REQ> requestMessageType, int discriminator, NullMessageHandler<REQ> nmh)
