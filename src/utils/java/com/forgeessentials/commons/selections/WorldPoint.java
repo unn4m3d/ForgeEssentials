@@ -98,7 +98,7 @@ public class WorldPoint extends Point
             pos = ((Entity) sender).getPosition();
         } else if (sender instanceof CommandBlockLogic) {
             world = ((CommandBlockLogic) sender).getWorld();
-            pos = new BlockPos(((CommandBlockLogic) sender).getPositionVector());
+            pos = new BlockPos(((CommandBlockLogic) sender).getCommandSource().getPos());
         } else {
             world = DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.getById(0), false, false);
             pos = new BlockPos(0,0,0);
