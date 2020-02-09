@@ -17,9 +17,9 @@ import com.forgeessentials.core.preloader.asminjector.annotation.Mixin;
 public abstract class MixinBlock extends Block
 {
 
-    protected MixinBlock(Material material)
+    protected MixinBlock(Block.Properties properties)
     {
-        super(material);
+        super(properties);
     }
 
     @Inject(target = "onFallenUpon(Lnet/minecraft/world/World;Lnet/minecraft/util/BlockPos;Lnet/minecraft/entity/Entity;F)V", aliases = "onFallenUpon=func_180658_a", at = @At("HEAD"))

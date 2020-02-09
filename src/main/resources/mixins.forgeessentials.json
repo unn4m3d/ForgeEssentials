@@ -2,6 +2,7 @@
 	"package": "com.forgeessentials.core.preloader.mixin",
 	"plugin": "com.forgeessentials.core.preloader.mixin.FEMixinConfig",
     "refmap": "mixins.forgeessentials.refmap.json",
+    "compatibilityLevel": "JAVA_8",
 	"mixins": [
         "block.MixinBlockPortal",
         "block.MixinBlockFire",
@@ -13,5 +14,7 @@
         "network.MixinNetHandlerPlayServer",
         "MixinDimensionManager"
         //"tileentity.MixinMobSpawnerBaseLogic"
-	]
+	],
+    "minVersion" : "0.8.0",
+    "required": true
 }

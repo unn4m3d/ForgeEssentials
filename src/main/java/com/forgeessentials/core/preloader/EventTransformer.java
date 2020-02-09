@@ -1,10 +1,11 @@
 package com.forgeessentials.core.preloader;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
+import javax.annotation.Nonnull;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
@@ -13,37 +14,49 @@ import com.forgeessentials.core.preloader.asminjector.ASMClassWriter;
 import com.forgeessentials.core.preloader.asminjector.ASMUtil;
 import com.forgeessentials.core.preloader.asminjector.ClassInjector;
 
-public class EventTransformer implements IClassTransformer
+import cpw.mods.modlauncher.Launcher;
+import cpw.mods.modlauncher.api.ITransformer;
+import cpw.mods.modlauncher.api.ITransformerVotingContext;
+import cpw.mods.modlauncher.api.TransformerVoteResult;
+
+public class EventTransformer implements ITransformer<ClassNode>
 {
 
-    public static final boolean isObfuscated = !((boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment"));
+    public static final boolean isObfuscated = EventTransformer.class.getClassLoader() != Launcher.class.getClassLoader();
 
     private List<ClassInjector> injectors = new ArrayList<>();
+    private Set<Target> targets = new HashSet<>();
 
-    public EventTransformer()
+    public EventTransformer(String[] injectors, String[] targets)
     {
-        injectors.add(ClassInjector.create("com.forgeessentials.core.preloader.injections.MixinEntity", isObfuscated));
-        injectors.add(ClassInjector.create("com.forgeessentials.core.preloader.injections.MixinBlock", isObfuscated));
+        for (String clazz : injectors)
+        {
+            ClassInjector CIj = ClassInjector.create(clazz, isObfuscated);
+            this.injectors.add(CIj);
+        }
+
+        for (String clazz : targets) {
+            this.targets.add(Target.targetClass(clazz));
+        }
     }
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] bytes)
+    @Nonnull @Override public ClassNode transform(ClassNode classNode, ITransformerVotingContext context)
     {
-        if (bytes == null)
-            return null;
-        ClassNode classNode = ASMUtil.loadClassNode(bytes);
-        boolean transformed = false;
-
         // Apply transformers
         for (ClassInjector injector : injectors)
-            transformed |= injector.inject(classNode);
+            injector.inject(classNode);
 
-        if (!transformed)
-            return bytes;
-
-        ClassWriter writer = new ASMClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        classNode.accept(writer);
-        return writer.toByteArray();
+        return classNode;
     }
 
+    @Nonnull @Override public TransformerVoteResult castVote(ITransformerVotingContext context)
+    {
+
+        return TransformerVoteResult.YES;
+    }
+
+    @Nonnull @Override public Set<Target> targets()
+    {
+        return targets;
+    }
 }

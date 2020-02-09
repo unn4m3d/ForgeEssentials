@@ -1,6 +1,7 @@
 package com.forgeessentials.core.preloader.injections;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,9 +16,9 @@ import com.forgeessentials.core.preloader.asminjector.annotation.Mixin;
 public abstract class MixinEntity extends Entity
 {
 
-    public MixinEntity(World world)
+    public MixinEntity(EntityType<?> type, World world)
     {
-        super(world);
+        super(type, world);
     }
 
     @Inject(target = "attackEntityFrom(Lnet/minecraft/util/DamageSource;F)Z", aliases = "attackEntityFrom=func_70097_a", at = @At("HEAD"))
