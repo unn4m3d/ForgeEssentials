@@ -28,8 +28,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.forgeessentials.api.APIRegistry;
 import com.forgeessentials.api.UserIdent;
+import com.forgeessentials.api.permissions.AreaZone;
 import com.forgeessentials.api.permissions.FEPermissions;
 import com.forgeessentials.api.permissions.WorldZone;
+import com.forgeessentials.api.permissions.Zone;
 import com.forgeessentials.commons.selections.WorldPoint;
 import com.forgeessentials.core.commands.ForgeEssentialsCommandBase;
 import com.forgeessentials.core.misc.TranslatedCommandException;
@@ -261,6 +263,12 @@ public class CommandParserArgs
     public void checkPermission(String perm) throws CommandException
     {
         if (!isTabCompletion && sender != null && !hasPermission(perm))
+            throw new TranslatedCommandException(FEPermissions.MSG_NO_COMMAND_PERM);
+    }
+
+    public void checkPermission(String perm, Zone area) throws CommandException
+    {
+        if (!isTabCompletion && sender != null && !APIRegistry.perms.checkUserPermission(UserIdent.get(senderPlayer), area, perm))
             throw new TranslatedCommandException(FEPermissions.MSG_NO_COMMAND_PERM);
     }
 
