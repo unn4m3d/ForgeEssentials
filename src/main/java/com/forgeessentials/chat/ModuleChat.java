@@ -253,20 +253,47 @@ public class ModuleChat
         if (textFormats != null)
             ChatOutputHandler.applyFormatting(messageComponent.getStyle(), ChatOutputHandler.enumChatFormattings(textFormats));
 
-        // Finish complete message
-        event.setComponent(new TextComponentTranslation("%s%s", header, messageComponent));
 
         // Handle chat range
-        Double range = ServerUtil.tryParseDouble(ident.getPermissionProperty(PERM_RANGE));
-        if (range != null)
+        if(ChatConfig.rangedMode)
         {
-            WorldPoint source = new WorldPoint(event.getPlayer());
-            for (EntityPlayerMP player : ServerUtil.getPlayerList())
+            String globalMark = ChatOutputHandler.formatColors("&6[G]&r");
+            String localMark = ChatOutputHandler.formatColors("[L]");
+            int range = ChatConfig.localRange;
+            if(message.startsWith("!"))
             {
-                if (player.dimension == source.getDimension() && source.distance(new WorldPoint(player)) <= range)
-                    ChatOutputHandler.sendMessage(player, event.getComponent());
+                messageComponent = new TextComponentString(messageComponent.getFormattedText().substring(1));
+                event.setComponent(new TextComponentTranslation("%s%s%s", globalMark, header, messageComponent));
             }
-            event.setCanceled(true);
+            else
+            {
+                event.setComponent(new TextComponentTranslation("%s%s%s", localMark, header, messageComponent));
+                if (range != 0)
+                {
+                    WorldPoint source = new WorldPoint(event.getPlayer());
+                    for (EntityPlayerMP player : ServerUtil.getPlayerList())
+                    {
+                        if (player.dimension == source.getDimension() && source.distance(new WorldPoint(player)) <= range)
+                            ChatOutputHandler.sendMessage(player, event.getComponent());
+                    }
+                    event.setCanceled(true);
+                }
+            }
+        }
+        else
+        {
+            event.setComponent(new TextComponentTranslation("%s%s", header, messageComponent));
+            Double range = ServerUtil.tryParseDouble(ident.getPermissionProperty(PERM_RANGE));
+            if (range != null)
+            {
+                WorldPoint source = new WorldPoint(event.getPlayer());
+                for (EntityPlayerMP player : ServerUtil.getPlayerList())
+                {
+                    if (player.dimension == source.getDimension() && source.distance(new WorldPoint(player)) <= range)
+                        ChatOutputHandler.sendMessage(player, event.getComponent());
+                }
+                event.setCanceled(true);
+            }
         }
     }
 
