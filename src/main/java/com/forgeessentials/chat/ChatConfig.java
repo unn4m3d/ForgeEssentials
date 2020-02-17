@@ -28,6 +28,10 @@ public class ChatConfig extends ConfigLoaderBase
 
     private static final String[] DEFAULT_LOGIN_MESSAGE = new String[] { "Welcome @player.", "This server is running ForgeEssentials" };
 
+    private static final String RANGED_MODE_HELP = "Ranged mode. All messages are visible to players within some radius from sender. To send global message, a player must use '!' mark before the message'";
+
+    private static final String LOCAL_RANGE_HELP = "Range for local messages";
+
     public static String gamemodeCreative;
 
     public static String gamemodeAdventure;
@@ -41,6 +45,10 @@ public class ChatConfig extends ConfigLoaderBase
     public static String[] loginMessage;
 
     public static Set<String> mutedCommands = new HashSet<>();
+
+    public static boolean rangedMode;
+
+    public static int localRange;
 
     @Override
     public void load(Configuration config, boolean isReload)
@@ -69,6 +77,9 @@ public class ChatConfig extends ConfigLoaderBase
         mutedCommands.clear();
         for (String cmd : config.get("Chat.mute", "mutedCommands", new String[] { "me" }, MUTEDCMD_HELP).getStringList())
             mutedCommands.add(cmd);
+
+        rangedMode = config.get("Chat", "RangedMode", false, RANGED_MODE_HELP).getBoolean(false);
+        localRange = config.get("Chat", "LocalRange", 50, LOCAL_RANGE_HELP).getInt();
 
         ModuleChat.instance.setChatLogging(config.get(CATEGORY, "LogChat", true, "Log all chat messages").getBoolean(true));
     }

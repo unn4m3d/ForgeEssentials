@@ -19,6 +19,7 @@ import com.forgeessentials.permissions.commands.CommandItemPermission;
 import com.forgeessentials.permissions.commands.CommandPermissions;
 import com.forgeessentials.permissions.commands.CommandPromote;
 import com.forgeessentials.permissions.commands.CommandZone;
+import com.forgeessentials.permissions.commands.CommandRegion;
 import com.forgeessentials.permissions.commands.PermissionCommandParser;
 import com.forgeessentials.permissions.core.ItemPermissionManager;
 import com.forgeessentials.permissions.core.PermissionScheduler;
@@ -95,6 +96,7 @@ public class ModulePermissions extends ConfigLoaderBase
         FECommandManager.registerCommand(new CommandPermissions());
         FECommandManager.registerCommand(new CommandPromote());
         FECommandManager.registerCommand(new CommandItemPermission());
+        FECommandManager.registerCommand(new CommandRegion());
 
         ForgeEssentials.getMcStatsGeneralGraph().addPlotter(new Plotter("Areas") {
             @Override
