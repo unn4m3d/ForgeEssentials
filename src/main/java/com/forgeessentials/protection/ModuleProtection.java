@@ -269,7 +269,7 @@ public class ModuleProtection
             APIRegistry.perms.registerPermission(PERM_TRAMPLE + blockPerm, DefaultPermissionLevel.ALL, "PLACE " + blockName);
             APIRegistry.perms.registerPermission(PERM_INTERACT + blockPerm, DefaultPermissionLevel.ALL, "INTERACT " + blockName);
             APIRegistry.perms.registerPermission(PERM_EXPLODE + blockPerm, DefaultPermissionLevel.ALL, "EXPLODE " + blockName);
-    }
+        }
 
         // ----------------------------------------
         // Register zone permissions

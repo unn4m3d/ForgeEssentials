@@ -635,4 +635,18 @@ public abstract class Zone
         return perms;
     }
 
+    // TODO : Documentation
+    // TODO : Search for group permissions
+    // TODO : Search for wildcard permissions
+    public List<UserIdent> searchForPermission(String perm)
+    {
+        List<UserIdent> users = new ArrayList<UserIdent>(){};
+        for (Entry<UserIdent, PermissionList> permList : playerPermissions.entrySet())
+        {
+            if(permList.getValue().containsKey(perm) && !PERMISSION_FALSE.equalsIgnoreCase(permList.getValue().get(perm)))
+                users.add(permList.getKey());
+        }
+        return users;
+    }
+
 }

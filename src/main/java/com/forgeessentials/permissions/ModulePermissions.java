@@ -219,6 +219,8 @@ public class ModulePermissions extends ConfigLoaderBase
         // Other
         APIRegistry.perms.registerPermission("fe.perm.autoPromote", DefaultPermissionLevel.OP, "Auto-promote a user after some time has passed");
         APIRegistry.perms.registerPermission("fe.core.info", DefaultPermissionLevel.OP, "Access FE's /feinfo command");
+        
+        CommandRegion.registerPermissions();
     }
 
     @Override
