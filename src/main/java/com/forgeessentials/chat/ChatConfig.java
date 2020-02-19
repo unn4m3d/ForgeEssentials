@@ -7,6 +7,7 @@ import java.util.Set;
 import net.minecraftforge.common.config.Configuration;
 
 import com.forgeessentials.core.moduleLauncher.config.ConfigLoaderBase;
+import com.forgeessentials.util.output.ChatOutputHandler;
 import com.forgeessentials.util.output.LoggingHandler;
 
 public class ChatConfig extends ConfigLoaderBase
@@ -50,6 +51,11 @@ public class ChatConfig extends ConfigLoaderBase
 
     public static int localRange;
 
+    public static String globalMark;
+    public static String globalMarkFormatted;
+    public static String localMark;
+    public static String localMarkFormatted;
+
     @Override
     public void load(Configuration config, boolean isReload)
     {
@@ -82,6 +88,12 @@ public class ChatConfig extends ConfigLoaderBase
         localRange = config.get("Chat", "LocalRange", 50, LOCAL_RANGE_HELP).getInt();
 
         ModuleChat.instance.setChatLogging(config.get(CATEGORY, "LogChat", true, "Log all chat messages").getBoolean(true));
+    
+        localMark = config.get("Chat", "LocalMark", "[L]","Local (Ranged) chat mark (available only in ranged mode)").getString();
+        globalMark = config.get("Chat", "GlobalMark", "&6[G]&r", "Global chat mark ").getString();
+
+        localMarkFormatted = ChatOutputHandler.formatColors(localMark);
+        globalMarkFormatted = ChatOutputHandler.formatColors(globalMark);
     }
 
     @Override

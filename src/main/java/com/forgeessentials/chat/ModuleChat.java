@@ -257,8 +257,8 @@ public class ModuleChat
         // Handle chat range
         if(ChatConfig.rangedMode)
         {
-            String globalMark = ChatOutputHandler.formatColors("&6[G]&r");
-            String localMark = ChatOutputHandler.formatColors("[L]");
+            String globalMark = ChatConfig.globalMarkFormatted;
+            String localMark = ChatConfig.localMarkFormatted;
             int range = ChatConfig.localRange;
             if(message.startsWith("!"))
             {
